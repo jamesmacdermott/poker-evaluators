@@ -186,6 +186,6 @@ hands = [[Card(14, 2), Card(10, 2), Card(11, 2), Card(12, 2), Card(13, 2), Card(
 
 t = time.time()
 print("\n")
-for i in range(0,100000):
+for i in range(0,1):
     x = evaluate_hand(hands)
 print(time.time()-t)
