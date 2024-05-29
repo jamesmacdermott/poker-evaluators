@@ -8,126 +8,68 @@ import heapq
 from collections import Counter
 import time
 
-def fill_with_highest_cards(cards: list[object], besthand: list[object]) -> list[int]:
-    cards = get_hand_values([card for card in cards if card not in besthand])
-    besthand = get_hand_values(besthand)
-    return besthand + heapq.nlargest(5-len(besthand),cards)
 
-def get_hand_values(hand: list[object]) -> list[int]:
-    return [card.value for card in hand]
-
-def pair(hand) -> tuple:
-    hand_values = get_hand_values(hand)
-    counts = Counter(hand_values)
-    pairs = []
-    for card in hand:
-        if counts[card.value] == 2:
-            pairs.append(card)
-    pairs = sorted(pairs, reverse=True)
-    if len(pairs) == 2:
-        return fill_with_highest_cards(hand,pairs)
+def pair(hand,suits,vals,counts) -> list[int]:
+    pairs = [val for val, count in counts.items() if count == 2]*2
+    if pairs:
+        pairs.sort(reverse=True)
+        return pairs[:2] + heapq.nlargest(3, (val for val in vals if val not in pairs))
     return 0
 
-def twopair(hand) -> tuple:
-    hand_values = get_hand_values(hand)
-    counts = Counter(hand_values)
-    pairs = []
-    for card in hand:
-        if counts[card.value] == 2:
-            pairs.append(card)
-    pairs = sorted(pairs, reverse=True)
-    if len(pairs) == 4:
-        return fill_with_highest_cards(hand,pairs)
-    elif len(pairs) > 4:
-        return fill_with_highest_cards(hand,heapq.nlargest(4,pairs))
+def twopair(hand,suits,vals,counts) -> list[int]:
+    pairs = [val for val, count in counts.items() if count == 2]*2
+    if len(pairs) >= 4:
+        pairs.sort(reverse=True)
+        return pairs[:4] + heapq.nlargest(1, (val for val in vals if val not in pairs))
     return 0
 
-def threeofakind(hand):
-    hand_values = get_hand_values(hand)
-    counts = Counter(hand_values)
-    trips = []
-    for card in hand:
-        if counts[card.value] == 3 and card not in trips:
-            trips.append(card)
-    trips = sorted(trips, reverse=True)
-    if len(trips) == 3:
-        return fill_with_highest_cards(hand,trips)
+def threeofakind(hand,suits,vals,counts) -> list[int]:
+    trips = [val for val, count in counts.items() if count == 3]
+    if trips:
+        return trips[:1]*3 + heapq.nlargest(2, (val for val in vals if val not in trips))
     return 0
 
-def straight(hand):
-    hand_values = sorted(list(set(get_hand_values(hand))),reverse=True)
-    if 14 in hand_values:
-        hand_values.append(1)
-    straight = 0
-    consecutive = 1
-    for card in range(0,len(hand_values)-1):
-        if hand_values[card] != hand_values[card+1]+1:
-            consecutive = 1
-        else:
-            consecutive += 1
-        if consecutive == 5:
-            return hand_values[card-3:card+2]
+def straight(hand,suits,vals,counts) -> list[int]:
+    vals = sorted(set(vals), reverse=True)
+    if 14 in vals:
+        vals.append(1)
+    for i in range(len(vals) - 4):
+        if vals[i] - vals[i + 4] == 4:
+            return vals[i:i + 5]
     return 0
 
-def flush(hand):
-    suits = ([],[],[],[])
-    for card in hand:
-        suits[card.suit].append(card.value)
+def flush(hand,suits,vals,counts) -> list[int]:
     for suit in suits:
         if len(suit) >= 5:
-            return heapq.nlargest(5,suit)
+            return heapq.nlargest(5, suit)
     return 0
     
-def fullhouse(hand):
-    hand_values = get_hand_values(hand)
-    counts = Counter(hand_values)
-    trips = []
-    for card in hand_values:
-        if counts[card] == 3:
-            trips.append(card)
-    trips = heapq.nlargest(3,trips)
-    pairs = []
-    for card in hand_values:
-        if counts[card] >= 2 and card not in trips:
-            pairs.append(card)
+def fullhouse(hand,suits,vals,counts) -> list[int]:
+    trips = [val for val, count in counts.items() if count == 3]
+    pairs = [val for val, count in counts.items() if count >= 2 and val not in trips]
     if trips and pairs:
-        return trips + heapq.nlargest(2,pairs)
+        return trips[:1]*3 + pairs[:1]*2
     return 0
 
-def fourofakind(hand):
-    hand_values = get_hand_values(hand)
-    counts = Counter(hand_values)
-    for card in hand:
-        if counts[card.value] == 4:
-            hand_values  = [v for v in hand_values if v != card.value]
-            return [card.value]*4 + heapq.nlargest(1,hand_values)
+def fourofakind(hand,suits,vals,counts) -> list[int]:
+    quads = [val for val, count in counts.items() if count == 4]
+    if quads:
+        return quads[:1]*4 + heapq.nlargest(1, (val for val in vals if val not in quads))
     return 0
 
-def straightflush(hand):
-    suits = ([],[],[],[])
-    for card in hand:
-        suits[card.suit].append(card.value)
-    if any(len(suit) >=5 for suit in suits):
-        for suit in suits:
-            if len(suit) >= 5:
-                suit = sorted(suit,reverse=True)
-                straight = 0
-                consecutive = 1
-                for card in range(0,len(suit)-1):
-                    if suit[card] != suit[card+1]+1:
-                        consecutive = 1
-                    else:
-                        consecutive += 1
-                    if consecutive == 5:
-                        return suit[card-3:card+2]
-                        
+def straightflush(hand,suits,vals,counts) -> list[int]:
+    for suit in suits:
+        if len(suit) >= 5:
+            straight = sorted(set(suit), reverse=True)
+            for i in range(len(straight) - 4):
+                if straight[i] - straight[i + 4] == 4:
+                    return straight[i:i + 5]
     return 0
 
-def royalflush(hand):
-    RoyalFlush = straightflush(hand)
-    if type(RoyalFlush) == list:
-        if RoyalFlush == [14,13,12,11,10]:
-            return RoyalFlush
+def royalflush(hand,suits,vals,counts):
+    for suit in suits:
+        if set([10, 11, 12, 13, 14]).issubset(set(suit)):
+            return [14, 13, 12, 11, 10]
     return 0
 
 def best_hands_allplayers(hands):
@@ -136,13 +78,24 @@ def best_hands_allplayers(hands):
     best_hands_allplayers = [None for p in range(0,len(hands))]
     while player < len(hands):
         rank = 9
+        suits = ([],[],[],[])
+        vals = [card.value for card in hands[player]]
+        counts = Counter(vals)
+        for card in hands[player]:
+            suits[card.suit].append(card.value)
         for handrank in hand_functions:
-            besthand = handrank(hands[player])
+            if rank in (9,8,5):
+                if any(len(suit) >=5 for suit in suits):
+                    besthand = handrank(hands[player],suits,vals,counts)
+                else:
+                    besthand = 0
+            else:
+                besthand = handrank(hands[player],suits,vals,counts)
             if besthand != 0:
                 break
             rank -= 1
-        if besthand == 0:
-            besthand = fill_with_highest_cards(hands[player],[])
+        if not(besthand):
+            besthand = heapq.nlargest(5,vals)
             rank = 0
         best_hands_allplayers[player] = (besthand,rank,player)
         player += 1
@@ -156,7 +109,8 @@ def evaluate_hand(hands):
     if len(hands) == 1:
         return hands[0]
     if maxrank == 9:
-        return 'splitpot'
+        return "Pot Split Between Players: " + ', '.join(map(str, (hand[2] for hand in hands)))
+
     cardstocompare = {
         0: (0,1,2,3,4),
         1: (0,2,3,4),
@@ -173,7 +127,7 @@ def evaluate_hand(hands):
         hands = [hand for hand in hands if hand[0][comparing] == maxval]
         if len(hands) == 1:
             return hands[0]
-    return 'splitpot'
+    return "Pot Split Between Players: " + ', '.join(map(str, (hand[2] for hand in hands)))
 
 class Card:
     def __init__(self, value, suit):
@@ -182,10 +136,15 @@ class Card:
 
 # Example deck and hands setup (simplified for this example)
 
-hands = [[Card(14, 2), Card(10, 2), Card(11, 2), Card(12, 2), Card(13, 2), Card(1, 3), Card(2, 3)],[Card(14, 2), Card(10, 2), Card(11, 2), Card(12, 2), Card(13, 2), Card(1, 3), Card(2, 3)],[Card(14, 2), Card(10, 2), Card(11, 2), Card(12, 2), Card(13, 2), Card(1, 3), Card(2, 3)],[Card(14, 2), Card(10, 2), Card(11, 2), Card(12, 2), Card(13, 2), Card(1, 3), Card(2, 3)],[Card(14, 2), Card(10, 2), Card(11, 2), Card(12, 2), Card(13, 2), Card(1, 3), Card(2, 3)],[Card(14, 2), Card(10, 2), Card(11, 2), Card(12, 2), Card(13, 2), Card(1, 3), Card(2, 3)],[Card(14, 2), Card(10, 2), Card(11, 2), Card(12, 2), Card(13, 2), Card(1, 3), Card(2, 3)]]
+hands = [[Card(14, 1), Card(10, 2), Card(12, 2), Card(12, 2), Card(13, 2), Card(5, 1), Card(2, 3)],
+         [Card(14, 1), Card(10, 2), Card(12, 2), Card(12, 2), Card(13, 2), Card(5, 1), Card(2, 3)],
+         [Card(14, 1), Card(10, 2), Card(12, 2), Card(12, 2), Card(13, 2), Card(5, 1), Card(2, 3)],
+         [Card(14, 1), Card(10, 2), Card(12, 2), Card(12, 2), Card(13, 2), Card(5, 1), Card(2, 3)],
+         [Card(14, 1), Card(10, 2), Card(12, 2), Card(12, 2), Card(13, 2), Card(5, 1), Card(2, 3)],
+         [Card(14, 1), Card(10, 2), Card(12, 2), Card(12, 2), Card(13, 2), Card(5, 1), Card(2, 3)]]
 
 t = time.time()
 print("\n")
-for i in range(0,1):
+for i in range(0,10000):
     x = evaluate_hand(hands)
 print(time.time()-t)
