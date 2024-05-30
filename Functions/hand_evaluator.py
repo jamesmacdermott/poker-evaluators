@@ -13,14 +13,14 @@ def pair(hand,suits,vals,counts) -> list[int]:
     pairs = [val for val, count in counts.items() if count == 2]*2
     if pairs:
         pairs.sort(reverse=True)
-        return pairs[:2] + heapq.nlargest(3, (val for val in vals if val not in pairs))
+        return pairs[:2] + heapq.nlargest(3, (val for val in vals if val not in pairs[:2]))
     return 0
 
 def twopair(hand,suits,vals,counts) -> list[int]:
     pairs = [val for val, count in counts.items() if count == 2]*2
     if len(pairs) >= 4:
         pairs.sort(reverse=True)
-        return pairs[:4] + heapq.nlargest(1, (val for val in vals if val not in pairs))
+        return pairs[:4] + heapq.nlargest(1, (val for val in vals if val not in pairs[:4]))
     return 0
 
 def threeofakind(hand,suits,vals,counts) -> list[int]:
@@ -137,15 +137,15 @@ class Card:
 
 # Example deck and hands setup (simplified for this example)
 
-hands = [[Card(14, 1), Card(10, 2), Card(4, 2), Card(12, 2), Card(13, 2), Card(5, 1), Card(2, 3)],
-         [Card(14, 1), Card(10, 2), Card(4, 2), Card(12, 2), Card(13, 2), Card(5, 1), Card(2, 3)],
-         [Card(14, 1), Card(10, 2), Card(4, 2), Card(12, 2), Card(13, 2), Card(5, 1), Card(2, 3)],
-         [Card(14, 1), Card(10, 2), Card(4, 2), Card(12, 2), Card(13, 2), Card(5, 1), Card(2, 3)],
-         [Card(14, 1), Card(10, 2), Card(4, 2), Card(12, 2), Card(13, 2), Card(5, 1), Card(2, 3)],
-         [Card(14, 1), Card(10, 2), Card(4, 2), Card(12, 2), Card(13, 2), Card(5, 1), Card(2, 3)]]
+# hands = [[Card(14, 1), Card(10, 2), Card(4, 2), Card(12, 2), Card(13, 2), Card(5, 1), Card(2, 3)],
+#          [Card(14, 1), Card(10, 2), Card(4, 2), Card(12, 2), Card(13, 2), Card(5, 1), Card(2, 3)],
+#          [Card(14, 1), Card(10, 2), Card(4, 2), Card(12, 2), Card(13, 2), Card(5, 1), Card(2, 3)],
+#          [Card(14, 1), Card(10, 2), Card(4, 2), Card(12, 2), Card(13, 2), Card(5, 1), Card(2, 3)],
+#          [Card(14, 1), Card(10, 2), Card(4, 2), Card(12, 2), Card(13, 2), Card(5, 1), Card(2, 3)],
+#          [Card(14, 1), Card(10, 2), Card(4, 2), Card(12, 2), Card(13, 2), Card(5, 1), Card(2, 3)]]
 
-t = time.time()
-print("\n")
-for i in range(0,10000):
-    x = evaluate_hand(hands)
-print(time.time()-t)
+# t = time.time()
+# print("\n")
+# for i in range(0,10000):
+#     x = evaluate_hand(hands)
+# print(time.time()-t)

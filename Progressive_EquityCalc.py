@@ -384,22 +384,30 @@ def simulatestage(stage : int):
     for p in Players:
         playerscards_array.append(makeallcardsarray(p))
 
-    #getwinodds(stage)
 
 
     if gamesettings.get_random() == False:
        os.system('cls')
        print("~~Current Stage :",stage)
        print_currentplayercards()
-    if stage == 3:
-        print("The winner is Player: ",hand_evaluator.evaluate_hand(playerscards_array))
     if stage != 0:
         print("\n~~ Community Cards ~~\n")
         comprint = '        |'
         for i in range(0,len(gamesettings.get_communitycards())):
             comprint = comprint + str(convert_val_to_icon[gamesettings.get_communitycards()[i].value]) +convert_val_to_icon[str(gamesettings.get_communitycards()[i].suit)] + '|' 
         print(comprint,"\n")
-              
+    if stage == 3:
+        print("The winner is Player: ",hand_evaluator.evaluate_hand(playerscards_array))
+    else:
+        prev = gamesettings.get_random()
+        rem_cards = []
+        for i in range(0,52 - (2 * len(playerscards_array) + len(gamesettings.get_communitycards()))):
+            card = deck_obj.give_random_card()
+            rem_cards.append(card)
+            deck_obj.take_card(card)
+        
+        equity = equity_calculator.get_all_equity(playerscards_array,rem_cards)
+        print("\nEquity=",equity)
 
  
 
