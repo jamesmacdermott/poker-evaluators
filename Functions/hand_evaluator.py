@@ -79,18 +79,19 @@ def best_hands_allplayers(hands):
     while player < len(hands):
         rank = 9
         suits = ([],[],[],[])
-        vals = [card.value for card in hands[player]]
-        counts = Counter(vals)
+        vals = []
         for card in hands[player]:
             suits[card.suit].append(card.value)
+            vals.append(card.value)
+        cardcounts = Counter(vals)
         for handrank in hand_functions:
             if rank in (9,8,5):
                 if any(len(suit) >=5 for suit in suits):
-                    besthand = handrank(hands[player],suits,vals,counts)
+                    besthand = handrank(hands[player],suits,vals,cardcounts)
                 else:
                     besthand = 0
             else:
-                besthand = handrank(hands[player],suits,vals,counts)
+                besthand = handrank(hands[player],suits,vals,cardcounts)
             if besthand != 0:
                 break
             rank -= 1
@@ -127,7 +128,7 @@ def evaluate_hand(hands):
         hands = [hand for hand in hands if hand[0][comparing] == maxval]
         if len(hands) == 1:
             return hands[0]
-    return "Pot Split Between Players: " + ', '.join(map(str, (hand[2] for hand in hands)))
+    return "Pot Split Between Players: " + ', '.join(map(str, (hand[2] + 1 for hand in hands)))
 
 class Card:
     def __init__(self, value, suit):
@@ -136,12 +137,12 @@ class Card:
 
 # Example deck and hands setup (simplified for this example)
 
-hands = [[Card(14, 1), Card(10, 2), Card(12, 2), Card(12, 2), Card(13, 2), Card(5, 1), Card(2, 3)],
-         [Card(14, 1), Card(10, 2), Card(12, 2), Card(12, 2), Card(13, 2), Card(5, 1), Card(2, 3)],
-         [Card(14, 1), Card(10, 2), Card(12, 2), Card(12, 2), Card(13, 2), Card(5, 1), Card(2, 3)],
-         [Card(14, 1), Card(10, 2), Card(12, 2), Card(12, 2), Card(13, 2), Card(5, 1), Card(2, 3)],
-         [Card(14, 1), Card(10, 2), Card(12, 2), Card(12, 2), Card(13, 2), Card(5, 1), Card(2, 3)],
-         [Card(14, 1), Card(10, 2), Card(12, 2), Card(12, 2), Card(13, 2), Card(5, 1), Card(2, 3)]]
+hands = [[Card(14, 1), Card(10, 2), Card(4, 2), Card(12, 2), Card(13, 2), Card(5, 1), Card(2, 3)],
+         [Card(14, 1), Card(10, 2), Card(4, 2), Card(12, 2), Card(13, 2), Card(5, 1), Card(2, 3)],
+         [Card(14, 1), Card(10, 2), Card(4, 2), Card(12, 2), Card(13, 2), Card(5, 1), Card(2, 3)],
+         [Card(14, 1), Card(10, 2), Card(4, 2), Card(12, 2), Card(13, 2), Card(5, 1), Card(2, 3)],
+         [Card(14, 1), Card(10, 2), Card(4, 2), Card(12, 2), Card(13, 2), Card(5, 1), Card(2, 3)],
+         [Card(14, 1), Card(10, 2), Card(4, 2), Card(12, 2), Card(13, 2), Card(5, 1), Card(2, 3)]]
 
 t = time.time()
 print("\n")
