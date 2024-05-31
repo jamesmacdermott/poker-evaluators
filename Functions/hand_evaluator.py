@@ -108,7 +108,7 @@ def evaluate_hand(hands):
     maxrank = max(hand[1] for hand in hands)
     hands = [hand for hand in hands if hand[1] == maxrank]
     if len(hands) == 1:
-        return hands[0]
+        return hands[0][2]
     if maxrank == 9:
         return "Pot Split Between Players: " + ', '.join(map(str, (hand[2] for hand in hands)))
 
@@ -127,7 +127,7 @@ def evaluate_hand(hands):
         maxval = max(hand[0][comparing] for hand in hands)
         hands = [hand for hand in hands if hand[0][comparing] == maxval]
         if len(hands) == 1:
-            return hands[0]
+            return hands[0][2]
     return "Pot Split Between Players: " + ', '.join(map(str, (hand[2] + 1 for hand in hands)))
 
 class Card:

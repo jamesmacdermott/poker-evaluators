@@ -6,8 +6,8 @@ from colorama import Fore, Back, Style, init
 import time
 import os
 
-from Functions import hand_evaluator
 from Functions import equity_calculator
+from Functions import hand_evaluator
 
 init()
 global spade,heart,diamond,club,gamesettings,convert_val_to_icon
@@ -436,7 +436,9 @@ def getwinodds(stage : int):
     pass
     
 def testing():
-    pass
+    x = [[1,2],[2,3]]
+    y = [2,3].extend(a for a in x)
+    return y
 
-startmenu()
-#print(testing())
+#startmenu()
+print(testing())
