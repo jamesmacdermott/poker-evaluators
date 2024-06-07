@@ -5,8 +5,9 @@ import os
 from colorama import Fore, Back, Style, init
 import time
 import os
+import multiprocessing
+from itertools import combinations
 
-from Functions import equity_calculator
 from Functions import hand_evaluator
 
 init()
@@ -353,12 +354,12 @@ def makeallcardsarray(player : Player) -> list:
     for i in range(0,len(gamesettings.get_communitycards())):
         C.append(gamesettings.get_communitycards()[i])
     return C
-
 def putcards_backindeck():
     for i in range(0,len(gamesettings.get_communitycards())):
         x = gamesettings.get_communitycards().pop()
         takencards.remove(str(x.value) + str(x.suit))
         deck_obj.take_card(x)
+
 
 def simulatestage(stage : int):
     os.system('cls')
@@ -406,7 +407,7 @@ def simulatestage(stage : int):
             rem_cards.append(card)
             deck_obj.take_card(card)
         
-        equity = equity_calculator.get_all_equity(playerscards_array,rem_cards)
+        equity = equity_calculator(playerscards_array,rem_cards)
         print("\nEquity=",equity)
 
  
@@ -440,5 +441,5 @@ def testing():
     y = [2,3].extend(a for a in x)
     return y
 
-#startmenu()
-print(testing())
+startmenu()
+#print(testing())
