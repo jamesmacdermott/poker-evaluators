@@ -1,17 +1,33 @@
 import multiprocessing
-import random
+from itertools import combinations
+from . import hand_evaluator
+import copy
 
-def add_random_numbers(result_queue):
-    random_numbers = [random.randint(1, 100) for _ in range(3)]
-    result_queue.put(random_numbers)
 
-def __func__():
-    num_processes = 4  # Number of processes
+
+def queue_evaluated_segment(result_queue,playerscards_array,segment_of_combinations):
+    for hand in segment_of_combinations:
+        cards_for_combo = copy.deepcopy(playerscards_array)
+        for player in cards_for_combo:
+            player.extend(hand)
+
+        winner = hand_evaluator.evaluate_hand(cards_for_combo)
+        if type(winner) == int:
+            result_queue.put(winner)
+ 
+
+def find_equity(playerscards_array,rem_cards):
+    num_processes = multiprocessing.cpu_count()  # Number of processes
     result_queue = multiprocessing.Queue()  # Queue to store results
 
     processes = []
-    for _ in range(num_processes):
-        p = multiprocessing.Process(target=add_random_numbers, args=(result_queue,))
+    needed = 7-len(playerscards_array[0])
+    combos_of_remaining = list(combinations(rem_cards, needed))
+    # for all combos use : combos_of_remaining[int(segment * (len(combos_of_remaining) / num_segments)):int((segment + 1) * (len(combos_of_remaining) / num_segments))]
+
+    num_segments = multiprocessing.cpu_count()
+    for segment in range(num_processes):
+        p = multiprocessing.Process(target=queue_evaluated_segment, args=(result_queue,playerscards_array,combos_of_remaining[int(segment * (len(combos_of_remaining) / num_segments)):int((segment + 1) * (len(combos_of_remaining) / num_segments))]))
         processes.append(p)
         p.start()
 
@@ -19,13 +35,14 @@ def __func__():
     for p in processes:
         p.join()
 
+
     # Retrieve results from the queue and sum all arrays
-    final_array = []
+    results = [0 for player in range(len(playerscards_array))]
     while not result_queue.empty():
-        final_array += result_queue.get()
+        results[result_queue.get()] += 1
 
-    print("Final array:", final_array)
-    print("Sum of all arrays:", sum(final_array))
+    print("Final array:", results)
+    return results
 
-if __name__ == "__main__":
-    __func__()
+if __name__ == '__main__':
+    pass

@@ -1,41 +1,41 @@
-﻿
-from deck_of_cards import deck_of_cards
+﻿from deck_of_cards import deck_of_cards
 import sys
 import os
 from colorama import Fore, Back, Style, init
 import time
-import os
-import multiprocessing
-from itertools import combinations
 
+from Functions import equity_calculator
 from Functions import hand_evaluator
+def initialize():
+    init()
+    global spade, heart, diamond, club, gamesettings, convert_val_to_icon
+    spade = Style.DIM + "♠️" + Style.RESET_ALL
+    club = Style.DIM + "♣️" + Style.RESET_ALL
+    heart = Fore.RED + "♥️" + Style.RESET_ALL
+    diamond = Fore.RED + "♦️" + Style.RESET_ALL
 
-init()
-global spade,heart,diamond,club,gamesettings,convert_val_to_icon
-spade = Style.DIM + "♠️" + Style.RESET_ALL
-club = Style.DIM + "♣️" + Style.RESET_ALL
-heart  = Fore.RED + "♥️" + Style.RESET_ALL
-diamond = Fore.RED + "♦️" + Style.RESET_ALL
-print(spade,heart,diamond,club)
-convert_val_to_icon = {
-    '0' : spade,
-    '1' : heart,
-    '2' : diamond,
-    '3' : club,
-    2 : 2,
-    3 : 3,
-    4 : 4,
-    5 : 5,
-    6 : 6,
-    7 : 7,
-    8 : 8,
-    9 : 9,
-    10 : 10,
-    11 : 'J',
-    12 : 'Q',
-    13 : 'K',
-    14 : 'A',
+    convert_val_to_icon = {
+        '0': spade,
+        '1': heart,
+        '2': diamond,
+        '3': club,
+        2: 2,
+        3: 3,
+        4: 4,
+        5: 5,
+        6: 6,
+        7: 7,
+        8: 8,
+        9: 9,
+        10: 10,
+        11: 'J',
+        12: 'Q',
+        13: 'K',
+        14: 'A',
     }
+
+    print(spade, heart, diamond, club)
+    print("x")
 class Game:
     def __init__(self, players, random_cards, stage,communitycards):
         self.players = players
@@ -398,16 +398,23 @@ def simulatestage(stage : int):
             comprint = comprint + str(convert_val_to_icon[gamesettings.get_communitycards()[i].value]) +convert_val_to_icon[str(gamesettings.get_communitycards()[i].suit)] + '|' 
         print(comprint,"\n")
     if stage == 3:
-        print("The winner is Player: ",hand_evaluator.evaluate_hand(playerscards_array))
+        winner = equity_calculator.get_winner(playerscards_array)
+        if type(winner) == int:
+            print("The winner is Player: ",winner)
+        else:
+            print(winner)
     else:
-        prev = gamesettings.get_random()
         rem_cards = []
         for i in range(0,52 - (2 * len(playerscards_array) + len(gamesettings.get_communitycards()))):
             card = deck_obj.give_random_card()
+            if card.value == 1:
+                card.value = 14
             rem_cards.append(card)
             deck_obj.take_card(card)
         
-        equity = equity_calculator(playerscards_array,rem_cards)
+        t = time.time()
+        equity = equity_calculator.find_equity(playerscards_array,rem_cards)
+        print("time to run=",t-time.time())
         print("\nEquity=",equity)
 
  
@@ -441,5 +448,7 @@ def testing():
     y = [2,3].extend(a for a in x)
     return y
 
-startmenu()
+if __name__ == '__main__':
+    initialize()
+    startmenu()
 #print(testing())
